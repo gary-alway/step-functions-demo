@@ -2,8 +2,10 @@
 
 Sample step functions using serverless
 
-## Testing
+## Run and test
 
 ```
+yarn dev
+
 yarn test
 ```

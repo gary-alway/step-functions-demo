@@ -16,6 +16,7 @@ custom:
     TaskResourceMapping:
       FirstState: arn:aws:lambda:us-east-1:101010101010:function:handler1
       FinalState: arn:aws:lambda:us-east-1:101010101010:function:handler2
+      DefaultState: arn:aws:lambda:us-east-1:101010101010:function:handler3
 
 provider:
   name: aws
@@ -30,6 +31,8 @@ functions:
     handler: src/handler1.endpoint
   handler2:
     handler: src/handler2.endpoint
+  handler3:
+    handler: src/handler3.endpoint
 
 stepFunctions:
   stateMachines:
@@ -40,8 +43,24 @@ stepFunctions:
           FirstState:
             Type: Task
             Resource: arn:aws:lambda:us-east-1:101010101010:function:handler1
+            Next: wait_using_seconds
+            Retry:
+              - ErrorEquals: [Error]
+                MaxAttempts: 0
+              - ErrorEquals: [States.ALL]
+                MaxAttempts: 3
+            Catch:
+              - ErrorEquals: [Error]
+                Next: DefaultState
+          wait_using_seconds:
+            Type: Wait
+            Seconds: 2
             Next: FinalState
           FinalState:
             Type: Task
             Resource: arn:aws:lambda:us-east-1:101010101010:function:handler2
+            End: true
+          DefaultState:
+            Type: Task
+            Resource: arn:aws:lambda:us-east-1:101010101010:function:handler3
             End: true
