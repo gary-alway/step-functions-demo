@@ -1,0 +1,47 @@
+service: step-functions-demo
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
+  - serverless-step-functions
+  - serverless-step-functions-local
+  - serverless-offline-lambda
+  - serverless-offline
+
+custom:
+  stepFunctionsLocal:
+    accountId: 101010101010
+    region: us-east-1
+    location: ./
+    TaskResourceMapping:
+      FirstState: arn:aws:lambda:us-east-1:101010101010:function:handler1
+      FinalState: arn:aws:lambda:us-east-1:101010101010:function:handler2
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  memorySize: 256
+  timeout: 30
+  region: us-east-1
+  stage: dev
+
+functions:
+  handler1:
+    handler: src/handler1.endpoint
+  handler2:
+    handler: src/handler2.endpoint
+
+stepFunctions:
+  stateMachines:
+    Machine:
+      definition:
+        StartAt: FirstState
+        States:
+          FirstState:
+            Type: Task
+            Resource: arn:aws:lambda:us-east-1:101010101010:function:handler1
+            Next: FinalState
+          FinalState:
+            Type: Task
+            Resource: arn:aws:lambda:us-east-1:101010101010:function:handler2
+            End: true
